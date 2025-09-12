@@ -14,6 +14,7 @@ public class LevelManager : MonoBehaviour
 			instance = this;
 		}
 		DontDestroyOnLoad(gameObject);
+		Random.InitState(10);
 	}
 	#endregion
 
@@ -46,8 +47,9 @@ public class LevelManager : MonoBehaviour
 
 	public void StartNewGame()
 	{
-		GameManager.instance.startUI.SetActive(false);
-		GameManager.instance.levelsUI.SetActive(true);
+		//GameManager.instance.startUI.SetActive(false);
+		//GameManager.instance.levelsUI.SetActive(true);
+		//LevelManager.instance.StartLevel(0);
 	}
 
 	System.Collections.IEnumerator LoadLevel(int level)
@@ -67,6 +69,7 @@ public class LevelManager : MonoBehaviour
 
 	public void StartLevel(int level)
 	{
+		GameManager.instance.startUI.SetActive(false);
 		GameManager.instance.levelsUI.SetActive(false);
 		if (level >= levels.Count)
 			level = 0;

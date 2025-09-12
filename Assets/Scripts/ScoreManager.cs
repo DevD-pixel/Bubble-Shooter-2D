@@ -20,7 +20,10 @@ public class ScoreManager
 	public void UpdateScoreUI()
 	{
 		Text _score = GameObject.FindWithTag("Score").GetComponent<Text>();
-		_score.text = $"Score: {score}";
+		_score.text = $"My Score: {score}";
+
+		Text _op_score = GameObject.FindWithTag("Score_OP").GetComponent<Text>();
+		_op_score.text = $"Opp Score: {score}"; //TODO: get opponent score
 	}
 
 	public void AddScore(int score)

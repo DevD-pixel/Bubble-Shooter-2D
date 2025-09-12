@@ -10,6 +10,7 @@ TagManager:
   - Limit
   - Bubble
   - Wall
+  - Score_OP
   layers:
   - Default
   - TransparentFX
