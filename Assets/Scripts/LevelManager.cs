@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 public class LevelManager : MonoBehaviour
@@ -56,7 +57,7 @@ public class LevelManager : MonoBehaviour
 	{
 		yield return new WaitForSeconds(0.1f);
 
-		ScoreManager.GetInstance().Reset();
+		ScoreManager.instance.Reset();
 		GameObject levelToLoad = Instantiate(levels[level]);
 		FillWithBubbles(levelToLoad, bubblesPrefabs);
 
@@ -69,6 +70,9 @@ public class LevelManager : MonoBehaviour
 
 	public void StartLevel(int level)
 	{
+		if (PhotonNetwork.IsMasterClient)
+			TurnManager.Instance.StartTurn();
+
 		GameManager.instance.startUI.SetActive(false);
 		GameManager.instance.levelsUI.SetActive(false);
 		if (level >= levels.Count)

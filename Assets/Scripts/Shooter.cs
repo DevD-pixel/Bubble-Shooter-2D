@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
+using System.Collections;
 
 public class Shooter : MonoBehaviour
 {
@@ -23,6 +25,7 @@ public class Shooter : MonoBehaviour
 		line = GameObject.FindGameObjectWithTag("Line");
 		limit = GameObject.FindGameObjectWithTag("Limit");
 		//lineRenderer = line.GetComponent<LineRenderer>();
+		PhotonNetwork.RunRpcCoroutines = true;
 	}
 
 	public void Update()
@@ -57,10 +60,12 @@ public class Shooter : MonoBehaviour
 			if (canShoot
 				&& Input.GetMouseButtonUp(0)
 				&& (Camera.main.ScreenToWorldPoint(Input.mousePosition).y > bottomShootPoint.transform.position.y)
-				&& (Camera.main.ScreenToWorldPoint(Input.mousePosition).y < limit.transform.position.y))
+				&& (Camera.main.ScreenToWorldPoint(Input.mousePosition).y < limit.transform.position.y)
+				&& TurnManager.Instance.IsMyTurn())
 			{
 				canShoot = false;
-				Shoot();
+				GetComponent<PhotonView>().RPC("Shoot", RpcTarget.All,lookAngle);
+				// Shoot();
 			}
 		}
 	}
@@ -96,10 +101,16 @@ public class Shooter : MonoBehaviour
 	// 	}
 	// }
 
-	public void Shoot()
+	[PunRPC]
+	public void Shoot(float lookAngle)
 	{
-		if (currentBubble == null) CreateNextBubble();
-		ScoreManager.GetInstance().AddThrows();
+		if (currentBubble == null)
+		{
+			if(PhotonNetwork.IsMasterClient)
+				GetComponent<PhotonView>().RPC("CreateNextBubble", RpcTarget.All,Random.Range(0, 1000));
+		}
+
+		ScoreManager.instance.AddThrows();
 		AudioManager.instance.PlaySound("shoot");
 		transform.rotation = Quaternion.Euler(0f, 0f, lookAngle - 90f);
 		currentBubble.transform.rotation = transform.rotation;
@@ -133,42 +144,47 @@ public class Shooter : MonoBehaviour
 
 		nextBubble = null;
 		currentBubble = null;
-		CreateNextBubble();
+		
+		if(PhotonNetwork.IsMasterClient)
+			GetComponent<PhotonView>().RPC("CreateNextBubble", RpcTarget.All, Random.Range(0, 1000));
 		canShoot = true;
 	}
 
-	public void CreateNextBubble()
+	public void GameManagerRequestNewBubbles()
 	{
-		List<GameObject> bubblesInScene = LevelManager.instance.bubblesInScene;
-		List<string> colors = LevelManager.instance.colorsInScene;
-
-		if (bubblesInScene.Count < 1) return;
-
-		if (nextBubble == null)
+		if(PhotonNetwork.IsMasterClient)
 		{
-			nextBubble = InstantiateNewBubble(bubblesInScene);
-		}
-		else
-		{
-			// if (!colors.Contains(nextBubble.GetComponent<Bubble>().bubbleColor.ToString()))
-			// {
-			// 	Destroy(nextBubble);
-			// 	nextBubble = InstantiateNewBubble(bubblesInScene);
-			// }
-		}
-
-		if (currentBubble == null)
-		{
-			currentBubble = nextBubble;
-			currentBubble.transform.position = transform.position;
-			nextBubble = InstantiateNewBubble(bubblesInScene);
+			GetComponent<PhotonView>().RPC("CreateNextBubble", RpcTarget.All, Random.Range(0, 1000));
 		}
 	}
 
-	private GameObject InstantiateNewBubble(List<GameObject> bubblesInScene)
+	[PunRPC]
+	public IEnumerator CreateNextBubble(int seed)
+	{
+		while (LevelManager.instance.bubblesInScene.Count < 1)
+		{
+			yield return null;
+		}
+		List<GameObject> bubblesInScene = LevelManager.instance.bubblesInScene;
+		List<string> colors = LevelManager.instance.colorsInScene;		
+		if (nextBubble == null)
+		{
+			nextBubble = InstantiateNewBubble(bubblesInScene, seed);
+		}
+
+		if (currentBubble == null)
+		{	
+			currentBubble = nextBubble;
+			currentBubble.transform.position = transform.position;
+			nextBubble = InstantiateNewBubble(bubblesInScene, seed);
+		}
+	}
+
+	private GameObject InstantiateNewBubble(List<GameObject> bubblesInScene, int seed)
 	{
 		if (bubblesInScene.Count > 0)
 		{
+			Random.InitState(seed);
 			GameObject newBubble = Instantiate(bubblesInScene[Random.Range(0, bubblesInScene.Count)]);
 			newBubble.transform.position = nextBubblePosition.position;
 			newBubble.GetComponent<Bubble>().isFixed = false;

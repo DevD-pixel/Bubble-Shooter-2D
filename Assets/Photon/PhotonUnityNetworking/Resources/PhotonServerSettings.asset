@@ -35,10 +35,13 @@ MonoBehaviour:
   StartInOfflineMode: 0
   RpcList:
   - ClickRpc
+  - CreateNextBubble
   - DestroyRpc
   - DestroySpaceship
   - Fire
   - RespawnSpaceship
+  - RPC_StartTurn
+  - Shoot
   - StartGame
   DisableAutoOpenWizard: 1
   ShowSettings: 0

@@ -166,14 +166,13 @@ public class GameManager : MonoBehaviour
 
 		if (LevelManager.instance.bubblesInScene.Count == 0)
 		{
-			ScoreManager man = ScoreManager.GetInstance();
-			winScore.GetComponent<Text>().text = man.GetScore().ToString();
-			winThrows.GetComponent<Text>().text = man.GetThrows().ToString();
+			winScore.GetComponent<Text>().text = ScoreManager.instance.GetScore().ToString();
+			winThrows.GetComponent<Text>().text = ScoreManager.instance.GetThrows().ToString();
 			WinMenu.SetActive(true);
 		}
 		else
 		{
-			shootScript.CreateNextBubble();
+			shootScript.GameManagerRequestNewBubbles();
 			shootScript.canShoot = true;
 		}
 
@@ -251,7 +250,7 @@ public class GameManager : MonoBehaviour
 					Destroy(t2.gameObject);
 				}
 
-				ScoreManager.GetInstance().AddScore(10);
+				ScoreManager.instance.AddScore(10);
 			}
 
 		}
@@ -268,7 +267,7 @@ public class GameManager : MonoBehaviour
 		{
 			if (!bubblesToDissolve.Contains(t))
 			{
-				ScoreManager.GetInstance().AddScore(1);
+				ScoreManager.instance.AddScore(1);
 				t.tag = "Untagged";
 				t.SetParent(null);
 				t.GetComponent<CircleCollider2D>().enabled = false;
@@ -334,7 +333,7 @@ public class GameManager : MonoBehaviour
 			{
 				if (!bubblesToDrop.Contains(bubble))
 				{
-					ScoreManager.GetInstance().AddScore(2);
+					ScoreManager.instance.AddScore(2);
 					bubble.tag = "Untagged";
 					bubblesToDrop.Add(bubble);
 				}
